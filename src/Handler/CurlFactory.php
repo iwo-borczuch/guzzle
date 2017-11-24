@@ -99,7 +99,9 @@ class CurlFactory implements CurlFactoryInterface
         }
 
         if (!$easy->response || $easy->errno) {
-            return self::finishError($handler, $easy, $factory);
+            if ($easy->errno !== CURLE_ABORTED_BY_CALLBACK || !isset($easy->options['progress'])) {
+                return self::finishError($handler, $easy, $factory);
+            }
         }
 
         // Return the response if it is present and there is no error.
@@ -459,7 +461,7 @@ class CurlFactory implements CurlFactoryInterface
                 if (is_resource($args[0])) {
                     array_shift($args);
                 }
-                call_user_func_array($progress, $args);
+                return call_user_func_array($progress, $args);
             };
         }
 
